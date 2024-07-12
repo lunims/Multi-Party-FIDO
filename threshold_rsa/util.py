@@ -2,7 +2,7 @@ from math import factorial
 
 
 
-def mod_inverse(a, m):
+def mod_inverse(a: int, m: int) -> int:
     m0 = m
     x0, x1 = 0, 1
 
@@ -23,7 +23,7 @@ def mod_inverse(a, m):
 
     return x1
 
-def mod_pow(base, exp, mod):
+def mod_pow(base: int, exp: int, mod: int) -> int:
     if exp < 0:
         base = mod_inverse(base, mod)
         exp = -exp
@@ -36,7 +36,7 @@ def mod_pow(base, exp, mod):
         exp //= 2
     return result
 
-def compute_lambda(delta, S, i, j):
+def compute_lambda(delta: int, S: [], i: int, j: int) -> int:
     if i == j:
         raise ValueError("rsa_threshold: i and j can't be equal by precondition")
 
@@ -70,7 +70,7 @@ def compute_lambda(delta, S, i, j):
 
 
 
-def compute_polynomial(k, a, x, m):
+def compute_polynomial(k: int, a: int, x: int, m: int) -> int:
     sum = 0
     for i in range(k):
         xi = x ** i
@@ -79,6 +79,6 @@ def compute_polynomial(k, a, x, m):
     return sum % m
 
 
-def calculate_delta(l):
+def calculate_delta(l: int) -> int:
     # ∆ = l!
     return factorial(l)

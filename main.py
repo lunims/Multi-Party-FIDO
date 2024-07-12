@@ -11,7 +11,7 @@ from cryptography.hazmat.backends import default_backend
 
 
 from threshold_rsa.threshold_rsa import Threshold_RSA, KeyShare, SignShare
-from threshold_rsa.rsa_authenticator import RSA_Authenticator, pkcs1_5_pad
+from authenticators.rsa_authenticator import RSA_Authenticator, pkcs1_5_pad
 
 
 import hashlib
