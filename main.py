@@ -88,7 +88,6 @@ def main():
         
     padded_hash = pkcs1_5_pad(concat_hashed, 2048)
     combined_signature = t.combine_sign_shares(key.public_key().public_numbers(), sign_shares, padded_hash)
-    print(combined_signature)
     assertion = AssertionResponse(result[0]._assertions[0].credential, result[0]._assertions[0].auth_data, combined_signature.to_bytes(256, "big"))
     res = _Ctap2ClientAssertionSelection(
             result[0]._client_data,
@@ -97,7 +96,6 @@ def main():
             None,
             None,
         )
-    print(res)
     resp = res.get_response(0)
     # Complete authenticator
     server.authenticate_complete(
