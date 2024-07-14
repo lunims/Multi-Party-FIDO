@@ -2,17 +2,26 @@ from math import factorial
 
 
 
-def mod_inverse(a: int, m: int) -> int:
-    m0 = m
+def mod_inverse(a: int, b: int) -> int:
+    """
+
+    Calculates the modular inverse of given parameters.
+
+    :param a: int
+    :param b: int
+
+    """
+
+    m0 = b
     x0, x1 = 0, 1
 
-    if m == 1:
+    if b == 1:
         return 0
 
     while a > 1:
-        q = a // m
-        t = m
-        m = a % m
+        q = a // b
+        t = b
+        b = a % b
         a = t
         t = x0
         x0 = x1 - q * x0
@@ -24,6 +33,16 @@ def mod_inverse(a: int, m: int) -> int:
     return x1
 
 def mod_pow(base: int, exp: int, mod: int) -> int:
+    """
+
+    Own implementation with added check for negative exponents.
+
+    :param base: int 
+    :param exp: int 
+    :param mod: int
+
+    """
+
     if exp < 0:
         base = mod_inverse(base, mod)
         exp = -exp
@@ -37,6 +56,17 @@ def mod_pow(base: int, exp: int, mod: int) -> int:
     return result
 
 def compute_lambda(delta: int, S: [], i: int, j: int) -> int:
+    """ 
+    
+    Computes lagrange Interpolation for the shares. Needed in combine_sign_shares().
+
+    :param delta: int -> ∆ = l!
+    :param S: [] -> arrray of sign_shares
+    :param i: int -> 0
+    :param j: int -> index of share
+    
+    """
+
     if i == j:
         raise ValueError("rsa_threshold: i and j can't be equal by precondition")
 
@@ -70,7 +100,17 @@ def compute_lambda(delta: int, S: [], i: int, j: int) -> int:
 
 
 
-def compute_polynomial(k: int, a: int, x: int, m: int) -> int:
+def compute_polynomial(k: int, a: [], x: int, m: int) -> int:
+    """ 
+    
+    Computes Polynomial according to the paper for Key Share Generation. Used in deal() function.
+    
+    :param k: int -> threshold
+    :param a: [] -> array with a[0] = d and rest random numbers within range (0, m-1)
+    :param x: int -> index
+    :param m: int -> m = p'q' = (p - 1)(q - 1)/4
+
+    """
     sum = 0
     for i in range(k):
         xi = x ** i
@@ -80,5 +120,13 @@ def compute_polynomial(k: int, a: int, x: int, m: int) -> int:
 
 
 def calculate_delta(l: int) -> int:
-    # ∆ = l!
+    """ 
+    
+    Wrapper for factorial computation. Calculates delta.
+    -> ∆ = l!
+
+    :param l: int -> number of players
+    
+    """
+
     return factorial(l)

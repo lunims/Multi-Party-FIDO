@@ -104,16 +104,13 @@ class Threshold_RSA:
         p = primes[0]
         q = primes[1]
 
+
         # p' = (p - 1) / 2
         pprime = p - ONE
-
-
         # q' = (q - 1) / 2
         m = q - ONE
-
         # m = (p - 1)(q - 1)
         m = m * pprime
-
         # m = (p - 1)(q - 1) / 4
         m = m >> 2
 
@@ -138,10 +135,9 @@ class Threshold_RSA:
     def combine_sign_shares(self, pub: rsa.RSAPublicNumbers, shares: [], msg: bytes) -> int:
         """
         
-        Takes generated sign shares and message in order to create the full signature
+        Takes generated sign shares and message in order to create the full signature.
         - according to Shoup's "Practical Threshold signatures"
         - https://www.iacr.org/archive/eurocrypt2000/1807/18070209-new.pdf
-        - 
 
         :param pub: rsa.RSAPublicNumbers -> public numbers n and e
         :param shares: [] -> Array of generated sign shares by rsa_authenticators
@@ -167,11 +163,11 @@ class Threshold_RSA:
         
         for share in shares:
             lambda_ = compute_lambda(delta, shares, 0, share.index)
-
             exp = lambda_ * 2
             abs_exp = abs(exp)
             tmp = pow(share.xi, exp, n)
             w = (w * tmp) % n
+        
         eprime = delta * delta * 4
         e = pub.e
         a, b, g = gcdex(eprime, e)
