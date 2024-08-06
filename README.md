@@ -13,8 +13,6 @@ We use the python-fido2 library by Yubico. By using this lib we can assure that 
 ## Usage
 
 The provided demos can be run via following command. t and n are parameters for threshold and participating players.
-
-``bash
 python3 main.py demo t n
 
 ## External Libraries
