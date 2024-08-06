@@ -94,9 +94,11 @@ class Threshold_RSA:
         :param primes: [p, q] -> primes of previously generated RSA key
         :param e: int -> public exponent of previously generated RSA key
 
+        p' = (p - 1) / 2
+        q' = (q - 1) / 2
+        m = (p - 1)(q - 1)
+        m = (p - 1)(q - 1) / 4
         """
-
-        ONE = 1
 
         if len(primes) != 2:
             raise ValueError("Multiprime RSA keys are unsupported")
@@ -104,14 +106,9 @@ class Threshold_RSA:
         p = primes[0]
         q = primes[1]
 
-
-        # p' = (p - 1) / 2
-        pprime = p - ONE
-        # q' = (q - 1) / 2
-        m = q - ONE
-        # m = (p - 1)(q - 1)
+        pprime = p - 1
+        m = q - 1
         m = m * pprime
-        # m = (p - 1)(q - 1) / 4
         m = m >> 2
 
         d = mod_inverse(e, m)

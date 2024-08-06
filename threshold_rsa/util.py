@@ -1,36 +1,5 @@
 from math import factorial
-
-
-
-def mod_inverse(a: int, b: int) -> int:
-    """
-
-    Calculates the modular inverse of given parameters.
-
-    :param a: int
-    :param b: int
-
-    """
-
-    m0 = b
-    x0, x1 = 0, 1
-
-    if b == 1:
-        return 0
-
-    while a > 1:
-        q = a // b
-        t = b
-        b = a % b
-        a = t
-        t = x0
-        x0 = x1 - q * x0
-        x1 = t
-
-    if x1 < 0:
-        x1 += m0
-
-    return x1
+from sympy import mod_inverse
 
 def mod_pow(base: int, exp: int, mod: int) -> int:
     """
@@ -46,14 +15,7 @@ def mod_pow(base: int, exp: int, mod: int) -> int:
     if exp < 0:
         base = mod_inverse(base, mod)
         exp = -exp
-    result = 1
-    power = base % mod
-    while exp > 0:
-        if exp % 2 == 1:
-            result = (result * power) % mod
-        power = (power * power) % mod
-        exp //= 2
-    return result
+    return pow(base, int(exp), mod)
 
 def compute_lambda(delta: int, S: [], i: int, j: int) -> int:
     """ 

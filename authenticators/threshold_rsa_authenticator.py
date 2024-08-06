@@ -28,6 +28,7 @@ from typing import Mapping, Dict, Any, List, Optional, Callable
 
 
 import hashlib
+import random
 
 
 import logging
@@ -69,30 +70,55 @@ def pkcs1_5_pad(hash: bytes, key_length: int) -> bytes:
     
 
 
-class RSA_Authenticator(WebAuthnClient, _BaseClient):
+class Threshold_RSA_Authenticator(WebAuthnClient, _BaseClient):
 
     def __init__(
         self, 
         key_share,
-        public_key, 
+        public_key,
+        random_seed: int, 
         origin: str,
-        verify: Callable[[str, str], bool] = verify_rp_id
+        verify: Callable[[str, str], bool] = verify_rp_id,
+        benchmark: bool = False
     ):
         super().__init__(origin, verify)
+        self.threshold = False
+        if key_share.threshold != key_share.players:
+            self.threshold = True
+        self.signature_counter = 0
         self.public_key = public_key
         self.key_share = key_share
         self.identifier = b'\x18\x04\x19\x03\x89\xAB\xCD\xEF\x00\x11\x22\x33\x44\x55\x66\x77'
-        self.credential_id = b'\x18\x04\x19\x03\x23\xAD\xCD\xEF\x01\x1A\x22\x33\x44\x55\x56\x27'
+        self.random = random.Random()
+        self.random.seed(random_seed)
+        self.benchmark = benchmark
+
+    def generate_credential_id(self) -> None:
+        """
+
+        Wrapper for credential_id generation. All authenticators need to have the same random seed.
+
+        """
+        self.credential_id = self.random.randbytes(16)
+
+    def user_presence_check(self):
+        inp = input("Enter 'y' to confirm: ")
+        if inp != 'y':
+            raise ValueError
 
     def make_credential(
         self,
         options: PublicKeyCredentialCreationOptions,
         event: Optional[Event] = None,
     ) -> AuthenticatorAttestationResponse:
-        """Creates a credential.
+        """
+
+        Creates a credential. 
+        - via Fido2Client in https://github.com/Yubico/python-fido2/blob/main/fido2/client.py
 
         :param options: PublicKeyCredentialCreationOptions data.
         :param threading.Event event: (optional) Signal to abort the operation.
+
         """
 
         options = PublicKeyCredentialCreationOptions.from_dict(options)
@@ -103,16 +129,16 @@ class RSA_Authenticator(WebAuthnClient, _BaseClient):
             timer.start()
 
         rp = options.rp
-        #if rp.id is None:
-        #    url = urlparse(self.origin)
-        #    if url.scheme != "https" or not url.netloc:
-        #        raise ClientError.ERR.BAD_REQUEST(
-        #            "RP ID required for non-https origin."
-        #        )
-        #    rp = replace(rp, id=url.netloc)
+        if rp.id is None:
+            url = urlparse(self.origin)
+            if url.scheme != "https" or not url.netloc:
+                raise ClientError.ERR.BAD_REQUEST(
+                    "RP ID required for non-https origin."
+                )
+            rp = replace(rp, id=url.netloc)
 
         logger.debug(f"Register a new credential for RP ID: {rp.id}")
-        # self._verify_rp_id(rp.id)
+        self._verify_rp_id(rp.id)
 
         client_data = self._build_client_data(
             CollectedClientData.TYPE.CREATE, options.challenge
@@ -161,10 +187,31 @@ class RSA_Authenticator(WebAuthnClient, _BaseClient):
         user_verification,
         enterprise_attestation,
         event,
-    ):
+    ) -> AuthenticatorAssertionResponse:
+        """
+
+        Generates a credential and sends back Attestation response with encoded public key.
+
+        :param client_data
+        :param rp
+        :param user
+        :param key_params
+        :param exclude_list
+        :param extensions
+        :param rk
+        :param user_verification
+        :param enterprise_attestation
+        :param event
+
+        """
+        if not self.benchmark:
+            print("Credential creation for " + rp.id +  " on authenticator " + str(self.key_share.index))
+            self.user_presence_check()
+            print("")
 
         hasher = hashlib.sha256()
         cose_public_key = RS256.from_cryptography_key(self.public_key)
+        self.generate_credential_id()
         attested_credential_data = AttestedCredentialData.create(self.identifier, self.credential_id, cose_public_key)
         bytes_rp_id = rp.id.encode('utf-8')
         hasher.update(bytes_rp_id)
@@ -239,7 +286,15 @@ class RSA_Authenticator(WebAuthnClient, _BaseClient):
         extension_inputs = {}
         used_extensions = []
         permissions = ClientPin.PERMISSION(0)
-        authenticator_data = AuthenticatorData.create(rp_id_hash, AuthenticatorData.FLAG.UP, counter= 0)
+        if self.threshold:
+            authenticator_data = AuthenticatorData.create(rp_id_hash, AuthenticatorData.FLAG.UP, counter= 0)
+        else:
+            self.signature_counter += 1
+            authenticator_data = AuthenticatorData.create(rp_id_hash, AuthenticatorData.FLAG.UP, counter= 0)
+        if not self.benchmark:
+            print("Credential assertion for " + rp_id +  " on authenticator " + str(self.key_share.index))
+            self.user_presence_check()
+            print("")
         concat = authenticator_data + client_data.hash
         
 
