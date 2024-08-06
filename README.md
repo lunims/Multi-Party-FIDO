@@ -10,6 +10,12 @@ This Thesis acts like a proof of concept implementation. It does not provide a f
 
 We use the python-fido2 library by Yubico. By using this lib we can assure that our approach lies within the FIDO standard. (https://github.com/Yubico/python-fido2)
 
+## Usage
+
+The provided demos can be run via following command. t and n are parameters for threshold and participating players.
+
+``bash
+python3 main.py demo t n
 
 ## External Libraries
 
