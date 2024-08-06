@@ -216,8 +216,9 @@ def threshold_demo(threshold: int, players: int) -> None:
             sign_shares.append(SignShare(int.from_bytes(response._assertions[0].signature, "big"), i, players, threshold))
         except:
             abort = True
-    if abort and len(result) < threshold:
+    if len(result) < threshold:
         print("Credential assertion aborted")
+        return
     auth_data = result[0]._assertions[0].auth_data
     client_data_hash = result[0]._client_data.hash
     concat = auth_data + client_data_hash

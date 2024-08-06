@@ -39,9 +39,17 @@ logger = logging.getLogger(__name__)
 import secrets
 
 def pkcs1_5_pad(hash: bytes, key_length: int) -> bytes:
-        hash_length = len(hash)
+        """
 
-        # DER-encoded prefix for SHA-256
+        Pads given hash according to pkcs1v5
+
+        :param hash: bytes -> hash to be padded
+        :param key_length: int -> size of key
+
+
+        """
+        hash_length = len(hash)
+        # fixed sha-256 identifier
         sha256_prefix = bytes([
             0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01,
             0x05, 0x00, 0x04, 0x20
@@ -53,15 +61,11 @@ def pkcs1_5_pad(hash: bytes, key_length: int) -> bytes:
 
         if ps_length < 8:
             raise ValueError('Key size is too small for the given hash length')
-
-        # Create the padded array
         padded = bytearray(padded_length)
         padded[0] = 0x00
         padded[1] = 0x01
         padded[2:2 + ps_length] = b'\xFF' * ps_length
         padded[2 + ps_length] = 0x00
-
-        # Copy the prefix and the hash after the padding
         padded[3 + ps_length:3 + ps_length + prefix_length] = sha256_prefix
         padded[3 + ps_length + prefix_length:] = hash
 
